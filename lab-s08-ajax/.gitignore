@@ -26,3 +26,7 @@ django-quiz/media/
 
 # Base de datos local de desarrollo
 django-quiz/db.sqlite3
+
+# Variables de entorno del frontend
+react-frontend/.env
+react-frontend/.env.local
