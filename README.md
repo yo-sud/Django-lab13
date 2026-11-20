@@ -72,4 +72,4 @@ python manage.py gate --modo ai              # compuerta sobre la IA
 python manage.py gate carts/cart-03.json --json
 ```
 
-`AGENTS.md` describe cómo debe trabajar un agente de IA sobre este repositorio.
+`AGENTS.md` describe cómo debe trabajar un agente de IA sobre este repositorio. El desarrollo completo, con las respuestas escritas y las salidas copiadas, está en [ENTREGABLE.md](ENTREGABLE.md).

@@ -20,7 +20,7 @@ def run(mode):
     )
     output = process.stdout + process.stderr
     ran = re.search(r'Ran (\d+) tests?', output)
-    failed = re.findall(r'^(?:FAIL|ERROR): (\S+)', output, flags=re.MULTILINE)
+    failed = re.findall(r'^(?:FAIL|ERROR): \S+ \(([^)]+)\)', output, flags=re.MULTILINE)
     return {
         'mode': mode,
         'tests': int(ran.group(1)) if ran else 0,
@@ -53,7 +53,9 @@ class Command(BaseCommand):
                 if result['mode'] != 'ai':
                     continue
                 for name in result['names']:
-                    grouped[name.split('.')[1] if '.' in name else name].append(name)
+                    parts = name.split('.')
+                    key = parts[2] if len(parts) > 2 else (parts[1] if len(parts) > 1 else name)
+                    grouped[key].append(name)
             self.stdout.write('\nPruebas fallidas de la IA agrupadas por archivo:')
             for test_file in sorted(grouped):
                 self.stdout.write(f"\n{test_file}:")

@@ -12,9 +12,9 @@ from shop.domain import Catalog, DomainError
 
 SAMPLE_CART = {
     'id': 'carrito-del-equipo',
-    'items': [{'sku': 'MP-001', 'qty': 1, 'client_price': '1.00'}],
-    'coupons': [],
-    'declared': {'subtotal': '20.00', 'discount': '0.00', 'igv': '3.60', 'total': '23.60'},
+    'items': [{'sku': 'MP-005', 'qty': 1}],
+    'coupons': ['BIENVENIDA10'],
+    'declared': {'subtotal': '26.75', 'discount': '2.68', 'igv': '4.33', 'total': '28.40'},
 }
 FORBIDDEN_ITEM_FIELDS = ('price', 'client_price')
 

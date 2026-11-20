@@ -27,14 +27,20 @@ class Command(BaseCommand):
             declared = declared_totals(cart)
             cart_findings = []
 
-            mismatch = compare_totals(declared, current)
-            if mismatch:
+            if 'error' in current:
                 cart_findings.append({
-                    'kind': 'TOTAL_MISMATCH',
-                    'fields': mismatch,
-                    'declared': declared,
-                    'calculated': current,
+                    'kind': 'IMPLEMENTATION_ERROR',
+                    'detail': current['error'],
                 })
+            else:
+                mismatch = compare_totals(declared, current)
+                if mismatch:
+                    cart_findings.append({
+                        'kind': 'TOTAL_MISMATCH',
+                        'fields': mismatch,
+                        'declared': declared,
+                        'calculated': current,
+                    })
 
             if options['replay']:
                 replayed = replay(cart, other)

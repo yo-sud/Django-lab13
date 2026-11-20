@@ -33,7 +33,8 @@ class Cart:
         if sku in self._lines:
             self._lines[sku].qty += qty
         else:
-            self._lines[sku] = CartLine(sku, qty, product.price)
+            # No se guarda el precio: se consulta al catálogo al calcular.
+            self._lines[sku] = CartLine(sku, qty, None)
         return self._qty(sku)
 
     def remove(self, sku, qty):
@@ -50,13 +51,16 @@ class Cart:
         line.qty = remaining
         return remaining
 
+    def _unit_price(self, line):
+        return self.catalog.get(line.sku).price
+
     def lines(self):
         return [
             {
                 'sku': line.sku,
                 'qty': line.qty,
-                'unit_price': str(line.unit_price),
-                'line_total': str(money(line.unit_price * line.qty)),
+                'unit_price': str(self._unit_price(line)),
+                'line_total': str(money(self._unit_price(line) * line.qty)),
             }
             for line in self._lines.values()
         ]
@@ -78,7 +82,10 @@ class Cart:
     # ── Pasos 6, 7 y 8: importes, cupón y payload ─────────────
     def subtotal(self):
         return sum(
-            (money(line.unit_price * line.qty) for line in self._lines.values()),
+            (
+                money(self._unit_price(line) * line.qty)
+                for line in self._lines.values()
+            ),
             Decimal('0.00'),
         )
 
