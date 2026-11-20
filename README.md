@@ -1,126 +1,128 @@
-# Laboratorio 13 — Catálogo Django/React y carrito auditado
+# Laboratorio 12 — Django REST + React: catálogo de productos
 
-Este repositorio reúne tres entregables:
+Proyecto construido sobre el laboratorio anterior de cuestionarios. Mantiene la API de exámenes y añade un **catálogo de productos con categorías**, consumido por el frontend React.
 
-1. **Carrito revisado por pruebas (4-C24-A)**, en la raíz: `shop/cart_team.py` (entrega del equipo) y `shop/cart_ai.py` (versión generada por IA, con cinco defectos deliberados). Las mismas pruebas corren contra ambos según la variable `SHOP_MODE`. El desarrollo completo está en [ENTREGABLE.md](ENTREGABLE.md).
-2. **Catálogo Django REST + React del laboratorio 12**, en [`lab-s08-ajax/`](lab-s08-ajax/README.md): modelos `Category`/`Product`, serializadores anidados, ViewSets, filtro por categoría, capa de servicios Axios, diagrama y capturas.
-3. **Frontend de la tienda**, en [`shop-frontend/`](shop-frontend/): interfaz React/Vite con estética tecnológica para agregar productos, ajustar cantidades, aplicar cupones y pagar. Captura: [docs/capturas/tienda-frontend.png](docs/capturas/tienda-frontend.png).
+## Reparto entre servidor y cliente
 
-## Parte 1 — Carrito revisado por pruebas
-
-## Arranque
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py seed_shop
-python manage.py test
+```
+Navegador (React, puerto 5173)
+  └─ pages/  →  services/  →  services/apiClient.js  →  Axios
+                                      │
+                                      │  http://127.0.0.1:8000/api
+                                      ▼
+Django REST Framework (puerto 8000)
+  └─ config/urls.py (DefaultRouter)
+       ├─ /products/    → ProductViewSet → ProductSerializer (categoría anidada)
+       └─ /categories/  → CategoryViewSet → CategorySerializer
 ```
 
-El estado inicial del laboratorio tiene **casi todas las pruebas fallando a propósito**: los métodos del carrito del equipo están pendientes y la versión de la IA contiene los cinco defectos. Las pruebas que pasan desde el principio son las de `shop/tests/test_audit.py`, que sólo validan el arnés de auditoría, los carritos declarados y el helper `money`.
+- **Servidor**: decide el modelo, expone el CRUD, anida la categoría en cada producto, filtra por `?category=<id>` y sirve las imágenes desde `/media/`.
+- **Cliente**: no contiene reglas de negocio; sólo pinta datos. Ningún componente importa Axios: todo pasa por `services/productService.js` y `services/categoryService.js`, que comparten la única instancia de `services/apiClient.js`.
 
-Para correr el mismo test suite contra la IA, en PowerShell:
+## Estructura
 
-```powershell
-$env:SHOP_MODE = "ai"
-python manage.py test
+```
+lab-s08-ajax/
+├── README.md
+├── docs/
+│   ├── diagrama-catalogo.md
+│   └── capturas/
+│       ├── catalogo-todos.png
+│       ├── catalogo-filtrado-bebidas.png
+│       └── formulario-producto.png
+├── django-quiz/                 # Backend Django
+│   ├── config/                  # settings, urls (router de la API)
+│   ├── catalog/                 # app del catálogo
+│   │   ├── models.py            # Category, Product
+│   │   ├── admin.py             # listados, filtros y búsqueda
+│   │   ├── serializers.py       # categoría anidada + category_id escribible
+│   │   ├── views.py             # CategoryViewSet, ProductViewSet
+│   │   ├── migrations/
+│   │   └── management/commands/seed_catalog.py
+│   ├── quiz/                    # API de exámenes del laboratorio anterior
+│   ├── static/
+│   └── requirements.txt
+└── react-frontend/              # Frontend React + Vite
+    ├── .env.example             # VITE_API_URL
+    └── src/
+        ├── services/            # apiClient.js, productService.js, categoryService.js
+        ├── client/              # código heredado de exámenes
+        ├── components/          # ProductCard.jsx
+        ├── pages/               # CatalogPage.jsx, ProductFormPage.jsx, exámenes
+        └── App.jsx
 ```
 
-## Tabla de reglas de la tienda
+## Cómo levantarlo
 
-| Regla | Enunciado |
-|---|---|
-| R1 — Dinero | Todo importe se calcula con `Decimal` y se redondea a 2 decimales con `ROUND_HALF_UP` mediante el helper `money`. Nunca se usa `float` ni `round()` para importes. |
-| R2 — Precio | El precio lo fija el servidor desde el catálogo. El cliente envía `sku` y `qty`; cualquier campo `price` o `client_price` se ignora y la compuerta lo rechaza. |
-| R3 — Existencias | `add` valida la cantidad acumulada contra el stock; `remove` nunca deja cantidades negativas y borra la línea al llegar a cero; `checkout` vuelve a validar todas las líneas antes de descontar nada. |
-| R4 — Cupón | Hay un solo cupón por carrito: aplicar otro reemplaza al anterior. El código se normaliza (sin espacios y en mayúsculas) y el descuento nunca supera el subtotal. |
-| R5 — Impuesto | El IGV es 18 % y se calcula sobre `subtotal - descuento`. |
-| R6 — Repetibilidad | Repetir una acción (doble clic en cupón, reintento de pago) debe dar el mismo resultado que ejecutarla una sola vez. |
-
-## Arquitectura
-
-- `shop/domain.py`: catálogo de **datos puros** (`dataclasses`), `Decimal`, `money` y excepciones de dominio. No importa modelos de Django.
-- `shop/cart_team.py`: implementación correcta que se completa en los pasos 3, 4, 6, 7 y 8.
-- `shop/cart_ai.py`: implementación de la IA con los cinco fallos; se repara en el paso 13.
-- `shop/impl.py`: lee `SHOP_MODE` y expone el `Cart` activo más el carrito HTTP compartido.
-- `shop/audit.py` y los comandos `audit_cart`, `duelo`, `gate`: auditoría, comparación y compuerta.
-
-## Tabla de la API
-
-| Método | Ruta | Cuerpo | Respuesta |
-|---|---|---|---|
-| `GET` | `/api/products/` | — | Lista de sku, nombre, precio y existencias |
-| `POST` | `/api/cart/items/` | `{"sku": "MP-001", "qty": 1}` | `{"sku": ..., "qty": ...}` |
-| `POST` | `/api/cart/items/remove/` | `{"sku": "MP-001", "qty": 1}` | `{"sku": ..., "qty": ...}` |
-| `POST` | `/api/cart/coupon/` | `{"code": "BIENVENIDA10"}` | `{"coupon": "BIENVENIDA10"}` |
-| `POST` | `/api/cart/checkout/` | — | Resumen con subtotal, descuento, IGV y total |
-| `GET` | `/api/cart/` | — | Resumen del carrito actual |
-
-Ejemplos con `Invoke-RestMethod`:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:8000/api/cart/items/ -Method Post -ContentType application/json -Body '{"sku":"MP-001","qty":1}'
-Invoke-RestMethod http://127.0.0.1:8000/api/cart/coupon/ -Method Post -ContentType application/json -Body '{"code":"BIENVENIDA10"}'
-Invoke-RestMethod http://127.0.0.1:8000/api/cart/checkout/ -Method Post
-```
-
-## Herramientas de verificación
-
-```bash
-python manage.py duelo                       # tabla equipo vs IA
-python manage.py duelo --modo ai             # fallos de la IA agrupados por archivo
-python manage.py audit_cart carts/*.json
-python manage.py audit_cart carts/*.json --replay
-python manage.py audit_cart carts/*.json --replay --json --strict
-python manage.py gate                        # carrito del equipo
-python manage.py gate --modo ai              # compuerta sobre la IA
-python manage.py gate carts/cart-03.json --json
-```
-
-`AGENTS.md` describe cómo debe trabajar un agente de IA sobre este repositorio.
-
-## Parte 2 — Catálogo del laboratorio 12
-
-El backend está en `lab-s08-ajax/django-quiz/` y el frontend en `lab-s08-ajax/react-frontend/`. Para levantarlo:
+### Backend
 
 ```bash
 cd lab-s08-ajax/django-quiz
 python -m venv .venv
-.venv\Scripts\activate
+.venv\Scripts\activate          # en Windows
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py seed_catalog
+python manage.py seed_catalog   # 3 categorías y 8 productos con imagen
 python manage.py runserver
 ```
+
+La API queda en `http://127.0.0.1:8000/` y el administrador en `/admin/`.
+Las imágenes generadas se guardan en `django-quiz/media/products/` y se sirven en `/media/` cuando `DEBUG = True`.
+
+### Frontend
 
 ```bash
 cd lab-s08-ajax/react-frontend
 npm install
-cp .env.example .env
+cp .env.example .env            # ajusta VITE_API_URL si el backend no está en :8000
 npm run dev
 ```
 
-El detalle de arquitectura, la tabla de endpoints, el diagrama y las capturas están en [lab-s08-ajax/README.md](lab-s08-ajax/README.md). Los dos entregables se subieron juntos a este repositorio (`Django-lab13`).
+El catálogo se abre en `http://localhost:5173/`. Pruebas: `npm test`. Build: `npm run build`.
 
-## Parte 3 — Frontend de la tienda
+### CORS
 
-Interfaz React/Vite en `shop-frontend/`. Mantiene el mismo reparto estricto que el catálogo: los componentes sólo usan `src/services/` y Axios se importa únicamente en `src/services/apiClient.js`.
+Sólo se permiten `http://localhost:5173` y `http://127.0.0.1:5173`. No se usa el comodín `*` porque la API emplea autenticación por token.
 
-```bash
-# Terminal 1: API (puerto 8010)
-python manage.py runserver 127.0.0.1:8010 --noreload
+## Tabla de la API del catálogo
 
-# Terminal 2: frontend (puerto 5174)
-cd shop-frontend
-npm install
-cp .env.example .env
-npm run dev
-```
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/api/products/` | Lista de productos con la categoría anidada. Acepta `?category=<id>` y `?search=<texto>` |
+| `POST` | `/api/products/` | Crea un producto; envía `category_id` |
+| `GET` | `/api/products/{id}/` | Obtiene un producto |
+| `PUT` | `/api/products/{id}/` | Modifica un producto |
+| `DELETE` | `/api/products/{id}/` | Elimina un producto |
+| `GET` | `/api/categories/` | Lista de categorías para el filtro y el formulario |
+| `POST` | `/api/categories/` | Crea una categoría |
+| `GET` | `/api/categories/{id}/` | Obtiene una categoría |
+| `PUT` | `/api/categories/{id}/` | Modifica una categoría |
+| `DELETE` | `/api/categories/{id}/` | Elimina una categoría |
 
-La variable `VITE_API_URL` apunta por defecto a `http://127.0.0.1:8010/api`. `shop/middleware.py` habilita CORS para los puertos 5173 y 5174; el endpoint `POST /api/cart/items/remove/` permite bajar unidades desde la interfaz sin recargar.
+Los recursos de exámenes (`/api/exams/`, `/api/questions/`, `/api/options/`) siguen disponibles. El esquema OpenAPI está en `/api/schema/` y la documentación interactiva en `/api/docs/`.
 
-Incluye catálogo responsive, estados de carga y error, badges de existencias, resumen fijo del carrito, control de cantidades, cupón único con normalización y comprobante de pago. Verificación: `npm run build` y recorrido completo en navegador (agregar → cupón → pagar) sin errores en consola.
+## Diagrama del catálogo
 
-![Frontend de la tienda](docs/capturas/tienda-frontend.png)
+Ver [docs/diagrama-catalogo.md](docs/diagrama-catalogo.md).
+
+## Capturas
+
+Catálogo completo (imagen, precio, existencias y categoría con su descripción):
+
+![Catálogo con todos los productos](docs/capturas/catalogo-todos.png)
+
+Catálogo filtrado por la categoría **Bebidas**, cargada desde el API:
+
+![Catálogo filtrado por categoría](docs/capturas/catalogo-filtrado-bebidas.png)
+
+Formulario de alta con la lista desplegable de categorías del API:
+
+![Formulario de producto](docs/capturas/formulario-producto.png)
+
+## Observaciones
+
+- `ProductSerializer` expone `category` anidado en lectura y `category_id` en escritura: una sola petición devuelve todo lo que pinta la tarjeta.
+- El `ProductViewSet` usa `select_related('category')` para no generar una consulta adicional por producto.
+- El filtro se resuelve en el servidor (`?category=<id>`) y se vuelve a pedir al cambiar el selector; las opciones del selector nunca están escritas a mano.
+- Tras borrar un producto se actualiza el estado local de React, sin `window.location.reload()`.
+- El repositorio base no importaba los modelos en `quiz/serializers.py` y no tenía migraciones; ambos se corrigieron para que el proyecto arranque.

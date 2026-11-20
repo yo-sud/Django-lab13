@@ -1,9 +1,0 @@
-{
-  "id": "cart-02",
-  "owner": "cliente-b",
-  "items": [
-    {"sku": "MP-005", "qty": 1}
-  ],
-  "coupons": ["BIENVENIDA10"],
-  "declared": {"subtotal": "26.75", "discount": "2.67", "igv": "4.33", "total": "28.41"}
-}
