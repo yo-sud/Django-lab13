@@ -25,11 +25,11 @@ class StockTests(SimpleTestCase):
 
     def test_checkout_revalidates_before_changing_anything(self):
         self.cart.add('MP-001', 5)
-        self.cart.catalog.decrease_stock('MP-001', 4)   # ahora quedan 6
+        self.cart.catalog.decrease_stock('MP-001', 7)   # ahora quedan 3
         before = self.cart.summary()
         with self.assertRaises(DomainError):
             self.cart.checkout()
-        self.assertEqual(self.cart.catalog.stock('MP-001'), 6)
+        self.assertEqual(self.cart.catalog.stock('MP-001'), 3)
         self.assertEqual(self.cart._qty('MP-001'), 5)
         self.assertEqual(self.cart.summary(), before)
 
