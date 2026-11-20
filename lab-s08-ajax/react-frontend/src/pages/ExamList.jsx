@@ -12,7 +12,7 @@ export function ExamList() {
   const { actionError, isDeleting, remove } = useExamsActions(reload)
 
   function goToCreate() {
-    navigate('/new')
+    navigate('/exams/new')
   }
 
   /* ── Estado de carga ── */

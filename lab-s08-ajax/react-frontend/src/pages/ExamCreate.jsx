@@ -14,7 +14,7 @@ export function ExamCreate() {
   const [description, setDescription] = useState('')
   const navigate = useNavigate()
   const { actionError, isCreating, create } = useExamsActions(() => {
-    navigate('/')
+    navigate('/exams')
   })
 
   async function handleSubmit(e) {
@@ -54,7 +54,7 @@ export function ExamCreate() {
           <button type="submit" disabled={isCreating}>
             {isCreating ? 'Creando…' : 'Guardar'}
           </button>
-          <button type="button" onClick={() => navigate('/')}>Cancelar</button>
+          <button type="button" onClick={() => navigate('/exams')}>Cancelar</button>
         </div>
       </form>
     </div>
