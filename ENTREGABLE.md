@@ -2,7 +2,7 @@
 
 ## Pedido atendido
 
-Completar el laboratorio de la tienda: leer reglas, ejecutar la suite inicial, implementar el carrito del equipo, responder las preguntas de dominio, verificar importes con `Decimal`, aplicar cupones, validar la API y dejar constancia de la auditoría. En este último turno se ajustó además que el carrito del equipo **no guarde precio**: la línea conserva `sku`, `qty` y un marcador `None`; el precio se consulta al catálogo al pintar y al sumar.
+Completar el laboratorio de la tienda: leer reglas, ejecutar la suite inicial, implementar el carrito del equipo, responder las preguntas de dominio, verificar importes con `Decimal`, aplicar cupones, validar la API y dejar constancia de la auditoría. En este último turno se ajustó además que el carrito del equipo **no guarde precio**: la línea conserva `sku`, `qty` y un marcador `None`; el precio se consulta al catálogo al pintar y al sumar. El catálogo del laboratorio 12 también quedó integrado en este mismo repositorio, bajo `lab-s08-ajax/`.
 
 ## 1. Reglas de la tienda y estado inicial
 

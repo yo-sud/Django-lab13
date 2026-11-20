@@ -1,6 +1,11 @@
-# Laboratorio — El carrito revisado por pruebas (4-C24-A)
+# Laboratorio 13 — Catálogo Django/React y carrito auditado
 
-Tienda de práctica con un carrito implementado dos veces: `shop/cart_team.py` (entrega del equipo) y `shop/cart_ai.py` (versión generada por IA, con cinco defectos deliberados). Las mismas pruebas corren contra ambos según la variable `SHOP_MODE`.
+Este repositorio reúne dos entregables:
+
+1. **Carrito revisado por pruebas (4-C24-A)**, en la raíz: `shop/cart_team.py` (entrega del equipo) y `shop/cart_ai.py` (versión generada por IA, con cinco defectos deliberados). Las mismas pruebas corren contra ambos según la variable `SHOP_MODE`. El desarrollo completo está en [ENTREGABLE.md](ENTREGABLE.md).
+2. **Catálogo Django REST + React del laboratorio 12**, en [`lab-s08-ajax/`](lab-s08-ajax/README.md): modelos `Category`/`Product`, serializadores anidados, ViewSets, filtro por categoría, capa de servicios Axios, diagrama y capturas.
+
+## Parte 1 — Carrito revisado por pruebas
 
 ## Arranque
 
@@ -72,4 +77,27 @@ python manage.py gate --modo ai              # compuerta sobre la IA
 python manage.py gate carts/cart-03.json --json
 ```
 
-`AGENTS.md` describe cómo debe trabajar un agente de IA sobre este repositorio. El desarrollo completo, con las respuestas escritas y las salidas copiadas, está en [ENTREGABLE.md](ENTREGABLE.md).
+`AGENTS.md` describe cómo debe trabajar un agente de IA sobre este repositorio.
+
+## Parte 2 — Catálogo del laboratorio 12
+
+El backend está en `lab-s08-ajax/django-quiz/` y el frontend en `lab-s08-ajax/react-frontend/`. Para levantarlo:
+
+```bash
+cd lab-s08-ajax/django-quiz
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py seed_catalog
+python manage.py runserver
+```
+
+```bash
+cd lab-s08-ajax/react-frontend
+npm install
+cp .env.example .env
+npm run dev
+```
+
+El detalle de arquitectura, la tabla de endpoints, el diagrama y las capturas están en [lab-s08-ajax/README.md](lab-s08-ajax/README.md). Los dos entregables se subieron juntos a este repositorio (`Django-lab13`).
