@@ -1,0 +1,12 @@
+{
+  "id": "cart-05",
+  "owner": "cliente-e",
+  "items": [
+    {"sku": "KB-002", "qty": 4}
+  ],
+  "removed": [
+    {"sku": "KB-002", "qty": 5}
+  ],
+  "coupons": [],
+  "declared": {"subtotal": "-120.00", "discount": "0.00", "igv": "-21.60", "total": "-141.60"}
+}

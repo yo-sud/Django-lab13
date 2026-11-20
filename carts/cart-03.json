@@ -1,0 +1,9 @@
+{
+  "id": "cart-03",
+  "owner": "cliente-c",
+  "items": [
+    {"sku": "MP-001", "qty": 1, "client_price": "1.00"}
+  ],
+  "coupons": [],
+  "declared": {"subtotal": "1.00", "discount": "0.00", "igv": "0.18", "total": "1.18"}
+}
