@@ -20,3 +20,9 @@ Thumbs.db
 
 # Django migrations (keep only the initial ones if desired)
 # django-quiz/quiz/migrations/*.py
+
+# Imágenes generadas por el comando seed_catalog
+django-quiz/media/
+
+# Base de datos local de desarrollo
+django-quiz/db.sqlite3

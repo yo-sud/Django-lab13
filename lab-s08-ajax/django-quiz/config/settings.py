@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'corsheaders',          # <-- antes de las apps propias
     'quiz',
+    'catalog',
 ]
 
 MIDDLEWARE = [
@@ -85,6 +86,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# ──────────────────────────────────────────────
+# Imágenes del catálogo
+# ──────────────────────────────────────────────
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # ──────────────────────────────────────────────
 # CORS – origen explícito, no el comodín
