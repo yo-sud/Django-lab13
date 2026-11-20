@@ -39,6 +39,18 @@ def cart_items(request):
 
 
 @csrf_exempt
+def cart_remove(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    try:
+        payload = _body(request)
+        qty = get_cart().remove(payload.get('sku'), payload.get('qty', 1))
+        return JsonResponse({'sku': payload.get('sku'), 'qty': qty})
+    except DomainError as err:
+        return JsonResponse({'error': str(err)}, status=400)
+
+
+@csrf_exempt
 def cart_coupon(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Método no permitido'}, status=405)

@@ -1,9 +1,10 @@
 # Laboratorio 13 — Catálogo Django/React y carrito auditado
 
-Este repositorio reúne dos entregables:
+Este repositorio reúne tres entregables:
 
 1. **Carrito revisado por pruebas (4-C24-A)**, en la raíz: `shop/cart_team.py` (entrega del equipo) y `shop/cart_ai.py` (versión generada por IA, con cinco defectos deliberados). Las mismas pruebas corren contra ambos según la variable `SHOP_MODE`. El desarrollo completo está en [ENTREGABLE.md](ENTREGABLE.md).
 2. **Catálogo Django REST + React del laboratorio 12**, en [`lab-s08-ajax/`](lab-s08-ajax/README.md): modelos `Category`/`Product`, serializadores anidados, ViewSets, filtro por categoría, capa de servicios Axios, diagrama y capturas.
+3. **Frontend de la tienda**, en [`shop-frontend/`](shop-frontend/): interfaz React/Vite con estética tecnológica para agregar productos, ajustar cantidades, aplicar cupones y pagar. Captura: [docs/capturas/tienda-frontend.png](docs/capturas/tienda-frontend.png).
 
 ## Parte 1 — Carrito revisado por pruebas
 
@@ -52,6 +53,7 @@ python manage.py test
 |---|---|---|---|
 | `GET` | `/api/products/` | — | Lista de sku, nombre, precio y existencias |
 | `POST` | `/api/cart/items/` | `{"sku": "MP-001", "qty": 1}` | `{"sku": ..., "qty": ...}` |
+| `POST` | `/api/cart/items/remove/` | `{"sku": "MP-001", "qty": 1}` | `{"sku": ..., "qty": ...}` |
 | `POST` | `/api/cart/coupon/` | `{"code": "BIENVENIDA10"}` | `{"coupon": "BIENVENIDA10"}` |
 | `POST` | `/api/cart/checkout/` | — | Resumen con subtotal, descuento, IGV y total |
 | `GET` | `/api/cart/` | — | Resumen del carrito actual |
@@ -101,3 +103,24 @@ npm run dev
 ```
 
 El detalle de arquitectura, la tabla de endpoints, el diagrama y las capturas están en [lab-s08-ajax/README.md](lab-s08-ajax/README.md). Los dos entregables se subieron juntos a este repositorio (`Django-lab13`).
+
+## Parte 3 — Frontend de la tienda
+
+Interfaz React/Vite en `shop-frontend/`. Mantiene el mismo reparto estricto que el catálogo: los componentes sólo usan `src/services/` y Axios se importa únicamente en `src/services/apiClient.js`.
+
+```bash
+# Terminal 1: API (puerto 8010)
+python manage.py runserver 127.0.0.1:8010 --noreload
+
+# Terminal 2: frontend (puerto 5174)
+cd shop-frontend
+npm install
+cp .env.example .env
+npm run dev
+```
+
+La variable `VITE_API_URL` apunta por defecto a `http://127.0.0.1:8010/api`. `shop/middleware.py` habilita CORS para los puertos 5173 y 5174; el endpoint `POST /api/cart/items/remove/` permite bajar unidades desde la interfaz sin recargar.
+
+Incluye catálogo responsive, estados de carga y error, badges de existencias, resumen fijo del carrito, control de cantidades, cupón único con normalización y comprobante de pago. Verificación: `npm run build` y recorrido completo en navegador (agregar → cupón → pagar) sin errores en consola.
+
+![Frontend de la tienda](docs/capturas/tienda-frontend.png)
